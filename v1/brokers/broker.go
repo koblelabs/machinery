@@ -3,10 +3,10 @@ package brokers
 import (
 	"errors"
 
-	"github.com/RichardKnop/machinery/v1/config"
-	"github.com/RichardKnop/machinery/v1/log"
-	"github.com/RichardKnop/machinery/v1/retry"
-	"github.com/RichardKnop/machinery/v1/tasks"
+	"github.com/koblelabs/machinery/v1/config"
+	"github.com/koblelabs/machinery/v1/log"
+	"github.com/koblelabs/machinery/v1/retry"
+	"github.com/koblelabs/machinery/v1/tasks"
 )
 
 // Broker represents a base broker structure

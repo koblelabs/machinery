@@ -19,10 +19,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/RichardKnop/machinery/v1/common"
-	"github.com/RichardKnop/machinery/v1/config"
-	"github.com/RichardKnop/machinery/v1/log"
-	"github.com/RichardKnop/machinery/v1/tasks"
+	"github.com/koblelabs/machinery/v1/common"
+	"github.com/koblelabs/machinery/v1/config"
+	"github.com/koblelabs/machinery/v1/log"
+	"github.com/koblelabs/machinery/v1/tasks"
 	"github.com/streadway/amqp"
 )
 

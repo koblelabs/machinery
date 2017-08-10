@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/RichardKnop/machinery/v1/common"
-	"github.com/RichardKnop/machinery/v1/config"
-	"github.com/RichardKnop/machinery/v1/log"
-	"github.com/RichardKnop/machinery/v1/tasks"
+	"github.com/koblelabs/machinery/v1/common"
+	"github.com/koblelabs/machinery/v1/config"
+	"github.com/koblelabs/machinery/v1/log"
+	"github.com/koblelabs/machinery/v1/tasks"
 	"github.com/streadway/amqp"
 )
 
@@ -241,12 +241,10 @@ func (b *AMQPBroker) delay(signature *tasks.Signature, delayMs int64) error {
 	}
 
 	// It's necessary to redeclare the queue each time (to zero its TTL timer).
-	queueName := fmt.Sprintf(
-		"delay.%d.%s.%s",
-		delayMs, // delay duration in mileseconds
-		b.cnf.AMQP.Exchange,
-		b.cnf.AMQP.BindingKey, // routing key
-	)
+	queueName := fmt.Sprintf("deferred.%s", signature.UUID)
+
+	fmt.Println(delayMs)
+	fmt.Println(delayMs + 3000)
 	declareQueueArgs := amqp.Table{
 		// Exchange where to send messages after TTL expiration.
 		"x-dead-letter-exchange": b.cnf.AMQP.Exchange,
@@ -255,8 +253,8 @@ func (b *AMQPBroker) delay(signature *tasks.Signature, delayMs int64) error {
 		// Time in milliseconds
 		// after that message will expire and be sent to destination.
 		"x-message-ttl": delayMs,
-		// Time after that the queue will be deleted.
-		"x-expires": delayMs * 2,
+		// Time after that the queue will be deleted...3 seconds after queue is unused, it will (hopefully) be cleaned up
+		"x-expires": delayMs + 3000,
 	}
 	conn, channel, _, _, _, err := b.Connect(
 		b.cnf.Broker,

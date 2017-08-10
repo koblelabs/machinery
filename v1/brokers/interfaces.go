@@ -1,7 +1,7 @@
 package brokers
 
 import (
-	"github.com/RichardKnop/machinery/v1/tasks"
+	"github.com/koblelabs/machinery/v1/tasks"
 )
 
 // Interface - a common interface for all brokers

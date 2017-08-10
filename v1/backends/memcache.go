@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/RichardKnop/machinery/v1/config"
-	"github.com/RichardKnop/machinery/v1/log"
-	"github.com/RichardKnop/machinery/v1/tasks"
 	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/koblelabs/machinery/v1/config"
+	"github.com/koblelabs/machinery/v1/log"
+	"github.com/koblelabs/machinery/v1/tasks"
 )
 
 // MemcacheBackend represents a Memcache result backend

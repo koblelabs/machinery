@@ -3,8 +3,8 @@ package config
 import (
 	"time"
 
-	"github.com/RichardKnop/machinery/v1/log"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/koblelabs/machinery/v1/log"
 )
 
 // NewFromEnvironment creates a config object from environment variables

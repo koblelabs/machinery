@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/RichardKnop/machinery/v1/config"
+	"github.com/koblelabs/machinery/v1/config"
 )
 
 func TestRedisMongodb(t *testing.T) {
