@@ -147,7 +147,7 @@ func (b *AMQPBroker) Publish(signature *tasks.Signature) error {
 }
 
 // PurgeQueue ... removes all the items from the queue
-func (b *AMQPBroker) PurgeQueue(queueName string) error {
+func (b *AMQPBroker) PurgeQueue(queueName string) (bool, int, error) {
 	conn, channel, _, _, _, err := b.Connect(
 		b.cnf.Broker,
 		b.cnf.TLSConfig,
@@ -162,11 +162,22 @@ func (b *AMQPBroker) PurgeQueue(queueName string) error {
 		amqp.Table(b.cnf.AMQP.QueueBindingArgs), // queue binding args
 	)
 	if err != nil {
-		return err
+		b.retryFunc(b.retryStopChan)
+		return b.retry, 0, err
 	}
 	defer b.Close(channel, conn)
 
-	return b.DeleteQueue(channel, queueName)
+	if err = channel.Qos(
+		b.cnf.AMQP.PrefetchCount,
+		0,     // prefetch size
+		false, // global
+	); err != nil {
+		return b.retry, 0, fmt.Errorf("Channel qos error: %s", err)
+	}
+
+	n, err := b.DeleteQueue(channel, queueName)
+
+	return b.retry, n, err
 }
 
 // consume takes delivered messages from the channel and manages a worker pool

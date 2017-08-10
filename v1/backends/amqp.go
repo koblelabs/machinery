@@ -237,7 +237,9 @@ func (b *AMQPBackend) PurgeState(taskUUID string) error {
 	}
 	defer b.Close(channel, conn)
 
-	return b.DeleteQueue(channel, taskUUID)
+	_, err = b.DeleteQueue(channel, taskUUID)
+
+	return err
 }
 
 // PurgeGroupMeta deletes stored group meta data
@@ -250,7 +252,9 @@ func (b *AMQPBackend) PurgeGroupMeta(groupUUID string) error {
 
 	b.DeleteQueue(channel, amqmChordTriggeredQueue(groupUUID))
 
-	return b.DeleteQueue(channel, groupUUID)
+	_, err = b.DeleteQueue(channel, groupUUID)
+
+	return err
 }
 
 // updateState saves current task state

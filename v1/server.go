@@ -165,8 +165,13 @@ func (server *Server) CancelDeferredTask(signature *tasks.Signature) (*tasks.Sig
 		return nil, fmt.Errorf("task cancellations are only supported with mongodb backends currently")
 	}
 
-	if err := amqpBroker.PurgeQueue(signature.UUID); err != nil {
+	_, numPurged, err := amqpBroker.PurgeQueue(signature.UUID)
+	if err != nil {
 		return nil, fmt.Errorf("task CANCEL message error: %s", err)
+	}
+
+	if numPurged < 1 {
+		return nil, fmt.Errorf("could not cancel task, already run...possibly")
 	}
 
 	// Set initial task state to CANCELLED

@@ -70,16 +70,13 @@ func (ac *AMQPConnector) Connect(url string, tlsConfig *tls.Config, exchange, ex
 }
 
 // DeleteQueue deletes a queue by name
-func (ac *AMQPConnector) DeleteQueue(channel *amqp.Channel, queueName string) error {
-	// First return value is number of messages removed
-	_, err := channel.QueueDelete(
+func (ac *AMQPConnector) DeleteQueue(channel *amqp.Channel, queueName string) (int, error) {
+	return channel.QueueDelete(
 		queueName, // name
 		false,     // ifUnused
 		false,     // ifEmpty
 		false,     // noWait
 	)
-
-	return err
 }
 
 // InspectQueue provides information about a specific queue
