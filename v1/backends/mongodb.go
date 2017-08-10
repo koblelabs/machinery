@@ -158,6 +158,12 @@ func (b *MongodbBackend) SetStateFailure(signature *tasks.Signature, err string)
 	return b.updateState(signature, update)
 }
 
+// SetStateCancelled updates task state to CANCELLED
+func (b *MongodbBackend) SetStateCancelled(signature *tasks.Signature) error {
+	update := bson.M{"state": tasks.StateCancelled}
+	return b.updateState(signature, update)
+}
+
 // GetState returns the latest task state
 func (b *MongodbBackend) GetState(taskUUID string) (*tasks.TaskState, error) {
 	if err := b.connect(); err != nil {

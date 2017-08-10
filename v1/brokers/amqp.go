@@ -146,6 +146,29 @@ func (b *AMQPBroker) Publish(signature *tasks.Signature) error {
 	return fmt.Errorf("Failed delivery of delivery tag: %v", confirmed.DeliveryTag)
 }
 
+// PurgeQueue ... removes all the items from the queue
+func (b *AMQPBroker) PurgeQueue(queueName string) error {
+	conn, channel, _, _, _, err := b.Connect(
+		b.cnf.Broker,
+		b.cnf.TLSConfig,
+		b.cnf.AMQP.Exchange,     // exchange name
+		b.cnf.AMQP.ExchangeType, // exchange type
+		b.cnf.DefaultQueue,      // queue name
+		true,                    // queue durable
+		false,                   // queue delete when unused
+		b.cnf.AMQP.BindingKey, // queue binding key
+		nil, // exchange declare args
+		nil, // queue declare args
+		amqp.Table(b.cnf.AMQP.QueueBindingArgs), // queue binding args
+	)
+	if err != nil {
+		return err
+	}
+	defer b.Close(channel, conn)
+
+	return b.DeleteQueue(channel, queueName)
+}
+
 // consume takes delivered messages from the channel and manages a worker pool
 // to process tasks concurrently
 func (b *AMQPBroker) consume(deliveries <-chan amqp.Delivery, taskProcessor TaskProcessor, amqpCloseChan <-chan *amqp.Error) error {
@@ -241,10 +264,8 @@ func (b *AMQPBroker) delay(signature *tasks.Signature, delayMs int64) error {
 	}
 
 	// It's necessary to redeclare the queue each time (to zero its TTL timer).
-	queueName := fmt.Sprintf("deferred.%s", signature.UUID)
+	queueName := signature.UUID
 
-	fmt.Println(delayMs)
-	fmt.Println(delayMs + 3000)
 	declareQueueArgs := amqp.Table{
 		// Exchange where to send messages after TTL expiration.
 		"x-dead-letter-exchange": b.cnf.AMQP.Exchange,

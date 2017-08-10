@@ -13,6 +13,8 @@ const (
 	StateSuccess = "SUCCESS"
 	// StateFailure - when processing of the task fails
 	StateFailure = "FAILURE"
+	// StateCancelled - when processing of the task fails
+	StateCancelled = "CANCELLED"
 )
 
 // TaskState represents a state of a task

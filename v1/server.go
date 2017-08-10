@@ -148,6 +148,35 @@ func (server *Server) SendTask(signature *tasks.Signature) (*backends.AsyncResul
 	return backends.NewAsyncResult(signature, server.backend), nil
 }
 
+// CancelDeferredTask cancels a queued task
+func (server *Server) CancelDeferredTask(signature *tasks.Signature) (*tasks.Signature, error) {
+	// Make sure result backend is defined
+	if server.backend == nil {
+		return nil, errors.New("Result backend required")
+	}
+
+	amqpBroker, ok := server.broker.(*brokers.AMQPBroker)
+	if !ok {
+		return nil, fmt.Errorf("task cancellations are only supported with amqp brokers currently")
+	}
+
+	mongodb, ok := server.backend.(*backends.MongodbBackend)
+	if !ok {
+		return nil, fmt.Errorf("task cancellations are only supported with mongodb backends currently")
+	}
+
+	if err := amqpBroker.PurgeQueue(signature.UUID); err != nil {
+		return nil, fmt.Errorf("task CANCEL message error: %s", err)
+	}
+
+	// Set initial task state to CANCELLED
+	if err := mongodb.SetStateCancelled(signature); err != nil {
+		return nil, fmt.Errorf("Set state pending error: %s", err)
+	}
+
+	return signature, nil
+}
+
 // SendChain triggers a chain of tasks
 func (server *Server) SendChain(chain *tasks.Chain) (*backends.ChainAsyncResult, error) {
 	_, err := server.SendTask(chain.Tasks[0])
