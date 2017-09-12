@@ -22,13 +22,7 @@ type Server struct {
 }
 
 // ErrNonePurged for when it's ok that no messages were purged
-type ErrNonePurged struct {
-	s string
-}
-
-func (e *ErrNonePurged) Error() string {
-	return e.s
-}
+var ErrNonePurged = errors.New("No messages purged!")
 
 // NewServer creates Server instance
 func NewServer(cnf *config.Config) (*Server, error) {
@@ -181,7 +175,7 @@ func (server *Server) CancelDeferredTask(signature *tasks.Signature) (*tasks.Sig
 	}
 
 	if numPurged < 1 {
-		return nil, &ErrNonePurged{s: "could not cancel task, already run...possibly"}
+		return nil, ErrNonePurged
 	}
 
 	// Set initial task state to CANCELLED
