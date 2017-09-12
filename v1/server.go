@@ -21,6 +21,15 @@ type Server struct {
 	backend         backends.Interface
 }
 
+// ErrNonePurged for when it's ok that no messages were purged
+type ErrNonePurged struct {
+	s string
+}
+
+func (e *ErrNonePurged) Error() string {
+	return e.s
+}
+
 // NewServer creates Server instance
 func NewServer(cnf *config.Config) (*Server, error) {
 	broker, err := BrokerFactory(cnf)
@@ -158,26 +167,26 @@ func (server *Server) CancelDeferredTask(signature *tasks.Signature) (*tasks.Sig
 
 	amqpBroker, ok := server.broker.(*brokers.AMQPBroker)
 	if !ok {
-		return nil, fmt.Errorf("task cancellations are only supported with amqp brokers currently")
+		return nil, errors.New("task cancellations are only supported with amqp brokers currently")
 	}
 
 	mongodb, ok := server.backend.(*backends.MongodbBackend)
 	if !ok {
-		return nil, fmt.Errorf("task cancellations are only supported with mongodb backends currently")
+		return nil, errors.New("task cancellations are only supported with mongodb backends currently")
 	}
 
 	_, numPurged, err := amqpBroker.PurgeQueue(signature.UUID)
 	if err != nil {
-		return nil, fmt.Errorf("task CANCEL message error: %s", err)
+		return nil, fmt.Errorf("task CANCEL message error: %s", err.Error())
 	}
 
 	if numPurged < 1 {
-		return nil, fmt.Errorf("could not cancel task, already run...possibly")
+		return nil, &ErrNonePurged{s: "could not cancel task, already run...possibly"}
 	}
 
 	// Set initial task state to CANCELLED
 	if err := mongodb.SetStateCancelled(signature); err != nil {
-		return nil, fmt.Errorf("Set state pending error: %s", err)
+		return nil, fmt.Errorf("Set state pending error: %s", err.Error())
 	}
 
 	return signature, nil
