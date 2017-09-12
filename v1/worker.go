@@ -19,6 +19,7 @@ import (
 type Worker struct {
 	server      *Server
 	ConsumerTag string
+	Concurrency int
 }
 
 // Launch starts a new worker process. The worker subscribes
@@ -45,7 +46,7 @@ func (worker *Worker) Launch() error {
 
 	go func() {
 		for {
-			retry, err := broker.StartConsuming(worker.ConsumerTag, worker)
+			retry, err := broker.StartConsuming(worker.ConsumerTag, worker.Concurrency, worker)
 
 			if retry {
 				log.WARNING.Printf("Start consuming error: %s", err)
@@ -160,14 +161,12 @@ func (worker *Worker) taskSucceeded(signature *tasks.Signature, taskResults []*t
 	for _, successTask := range signature.OnSuccess {
 		if signature.Immutable == false {
 			// Pass results of the task to success callbacks
-			args := make([]tasks.Arg, len(taskResults)+len(successTask.Args))
-			for i, taskResult := range taskResults {
-				args[i] = tasks.Arg{
+			for _, taskResult := range taskResults {
+				successTask.Args = append([]tasks.Arg{{
 					Type:  taskResult.Type,
 					Value: taskResult.Value,
-				}
+				}}, successTask.Args...)
 			}
-			successTask.Args = append(args, successTask.Args...)
 		}
 
 		worker.server.SendTask(successTask)
@@ -186,6 +185,7 @@ func (worker *Worker) taskSucceeded(signature *tasks.Signature, taskResults []*t
 	if err != nil {
 		return fmt.Errorf("Group completed error: %s", err)
 	}
+
 	// If the group has not yet completed, just return
 	if !groupCompleted {
 		return nil
