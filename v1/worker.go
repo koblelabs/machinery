@@ -29,9 +29,11 @@ func (worker *Worker) Launch() error {
 	broker := worker.server.GetBroker()
 
 	log.INFO.Printf("Launching a worker with the following settings:")
-	log.INFO.Printf("- Broker: %s", cnf.Broker)
+	//log.INFO.Printf("- Broker: %s", cnf.Broker)
+	log.INFO.Print("- Broker: REDACTED")
 	log.INFO.Printf("- DefaultQueue: %s", cnf.DefaultQueue)
-	log.INFO.Printf("- ResultBackend: %s", cnf.ResultBackend)
+	//log.INFO.Printf("- ResultBackend: %s", cnf.ResultBackend)
+	log.INFO.Print("- ResultBackend: REDACTED")
 	if cnf.AMQP != nil {
 		log.INFO.Printf("- AMQP: %s", cnf.AMQP.Exchange)
 		log.INFO.Printf("  - Exchange: %s", cnf.AMQP.Exchange)
